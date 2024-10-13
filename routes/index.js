@@ -130,7 +130,7 @@ router.get('/download', async function (req, res, next) {
                 }
             })
 
-        } else if (parsedUrl.pathname.startsWith('/stories')) {
+        } else if (parsedUrl.pathname.startsWith('/stories')||parsedUrl.pathname.startsWith('/s')) {
 
             // Handle general stories (excluding highlights)
             console.log("stories")
@@ -168,49 +168,40 @@ router.get('/download', async function (req, res, next) {
             })
 
         } else {
-            // Handle other cases
-            const postId = extractInstagramCode(urlBase);
-            console.log(postId)
-            // const urlDone = `${cleanedURL}?__a=1&__d=dis`;
-            const url = `https://www.instagram.com/p/${postId}/?__a=1&__d=dis`;
-            console.log(url)
-            const {data} = await axios({
-                url,
-            });
-            console.log(data)
-            console.log(data.graphql.shortcode_media.edge_sidecar_to_children)
-            // console.log("data.graphql.shortcode_media.edge_sidecar_to_children.edges", data.graphql.shortcode_media.edge_sidecar_to_children.edges)
-            let listDisplay = []
-            if (data.graphql.shortcode_media.edge_sidecar_to_children === undefined) {
-                listDisplay.push({
-                    listImageVersion: data.graphql.shortcode_media.display_url,
-                    listVideoVersion: data.graphql.shortcode_media.video_url,
-                })
-            } else {
-                data.graphql.shortcode_media.edge_sidecar_to_children.edges.forEach((node) => {
-                    console.log("forEach: ", node.node.display_url)
-                    if (node.node.__typename === "GraphImage") {
-                        listDisplay.push({
-                            listImageVersion: node.node.display_url
-                        })
-                    } else {
-                        listDisplay.push(
-                            {
-                                listImageVersion: node.node.display_url,
-                                listVideoVersion: node.node.video_url
-                            }
-                        )
-                    }
-                })
-            }
-            res.status(200).json({
-                // data:data,
-                result: {
-                    type: "post",
-                    media: listDisplay
+            const { igdl } = require('ruhend-scraper')
+            //https://instagram.com/xxxxxxx
+
+            let response = await igdl(urlBase);
+            console.log(response)
+
+            console.log("Response:", response.data);
+            const listMedia = []
+            let listImageVersion = undefined
+            let listVideoVersion = undefined
+            let media = undefined
+            const uniqueUrls = [...new Set(response.data.map(item => item.url))];
+            console.log(uniqueUrls)
+            uniqueUrls.forEach(item => {
+                console.log("item", item)
+                if (item.includes("https://d.rapidcdn.app/d?token=")) {
+                    listVideoVersion = item
+                } else {
+                    listImageVersion = item
                 }
+                media = {
+                    listImageVersion,
+                    listVideoVersion
+                }
+                listMedia.push(media)
             })
 
+            console.log(listMedia)
+            res.status(200).json({
+                result: {
+                    type: "post",
+                    media: listMedia
+                }
+            })
         }
     } catch (e) {
         console.log(e)
