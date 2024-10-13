@@ -55,7 +55,7 @@
     <nav class="nav-header container-header">
         <div class="nav__data">
             <a href="/" class="nav__logo">
-                <i class="ri-planet-line"></i> instagsnap
+                <i class="ri-planet-line"></i> InstagSnap
             </a>
 
             <div class="nav__toggle" id="nav-toggle">
@@ -304,7 +304,7 @@
 
 <footer style="padding-bottom: 10px">
     <div class="footer-content">
-        <p>Designed by <a href="/">instagsnap</a></p>
+        <p>Designed by <a href="/">InstagSnap</a></p>
         <p>&copy; 2024 - All rights reserved</p>
     </div>
 </footer>
@@ -450,7 +450,6 @@
             if (!response.ok) throw new Error('Network response was not ok');
             const data = await response.json();
             console.log("data", data)
-            // if (data.result.type === "story") {
             console.log(data.result.media)
             for (const media of data.result.media) {
                 const video = document.createElement("video")
@@ -475,6 +474,7 @@
                 console.log("urlImage", urlImage)
                 if (urlVideo === undefined) {
                     console.log("urlVideo === undefined")
+                    console.log(urlImage)
                     try {
                         // Tải ảnh qua server-side proxy
                         const response = await fetch(`/proxy-image?url=${encodeURIComponent(urlImage)}`);
@@ -501,7 +501,14 @@
                 } else {
                     video.src = media.listVideoVersion
                     buttonDownload.onclick = () => {
-                        downloadVideoBlob(media.listVideoVersion, buttonDownload)
+                        if (media.listVideoVersion.includes('https://d.rapidcdn.app/d?token=')) {
+                            const tempLink = document.createElement("a")
+                            tempLink.href = media.listVideoVersion
+                            tempLink.download = `image${generateRandomString()}.jpg`
+                            tempLink.click()
+                        } else {
+                            downloadVideoBlob(media.listVideoVersion, buttonDownload)
+                        }
                     }
                     try {
                         // Tải ảnh qua server-side proxy
@@ -528,77 +535,13 @@
                     containerContent.appendChild(container)
                 }
             }
-            // } else {
-            //     console.log("Post")
-            //     console.log(data.result.media)
-            //     for (const node of data.result.media) {
-            //         console.log("node",node)
-            //         console.log("node url image:",node.url_image)
-            //         console.log("node url video:",node.url_video)
-            //         const video = document.createElement("video")
-            //         video.classList.add("style-image-instagram")
-            //         video.controls = !0
-            //         const image = document.createElement("img");
-            //         image.classList.add("style-image-instagram")
-            //         const container = document.createElement("div")
-            //         container.style.margin = '10px'
-            //         container.style.display = 'flex'
-            //         container.style.flexDirection = 'column'
-            //         const buttonDownload = document.createElement("button")
-            //         buttonDownload.textContent = "Download"
-            //         buttonDownload.classList.add("button-download")
-            //         const buttonDownloadThumbnail = document.createElement("button")
-            //         buttonDownloadThumbnail.textContent = "Download Thumbnail"
-            //         buttonDownloadThumbnail.classList.add("button-download-thumbnail")
-            //         if (node.url_video === undefined){
-            //             try {
-            //                 // Tải ảnh qua server-side proxy
-            //                 const response = await fetch(`/proxy-image?url=${encodeURIComponent(node.url_image)}`);
-            //                 const blob = await response.blob();
-            //                 // Chuyển đổi blob thành Base64
-            //                 const reader = new FileReader();
-            //                 reader.readAsDataURL(blob);
-            //                 reader.onloadend = () => {
-            //                     const base64data = reader.result;
-            //                     image.src = base64data
-            //                     buttonDownload.onclick = () => {
-            //                         const tempLink = document.createElement("a")
-            //                         tempLink.href = base64data
-            //                         tempLink.download = `image${generateRandomString()}.jpg`
-            //                         tempLink.click()
-            //                     }
-            //                     container.appendChild(image);
-            //                     container.appendChild(buttonDownload)
-            //                     containerContent.appendChild(container)
-            //                 };
-            //             } catch (error) {
-            //                 console.error('Error fetching the image:', error);
-            //             }
-            //             container.appendChild(image)
-            //             container.appendChild(buttonDownload)
-            //             containerContent.appendChild(container)
-            //         }else {
-            //             video.src = node.url_video
-            //             container.appendChild(video);
-            //             container.appendChild(buttonDownloadThumbnail)
-            //             container.appendChild(buttonDownload)
-            //             containerContent.appendChild(container)
-            //         }
-            //
-            //
-            //
-            //
-            //     }
-            // }
-        } catch
-            (error) {
+        } catch (error) {
             console.error('Error fetching the video:', error);
             alert('Lỗi khi tải video. Vui lòng kiểm tra URL.');
         } finally {
             loading.style.display = "none";
         }
-    })
-    ;
+    });
     document.getElementById("clear").addEventListener("click", (() => {
         const e = document.getElementById("urlInput");
         "" !== e.value && (e.value = "")
