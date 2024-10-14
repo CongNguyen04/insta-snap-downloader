@@ -123,7 +123,7 @@ i18n.configure({
 const interval = 15 * 60 * 1000; // 5 phút
 
 setInterval(() => {
-  fetch('https://instasnap.onrender.com')
+  fetch('https://instagsnap.onrender.com')
       .then(res => res.text())
       .then(text => console.log('Ping thành công:', text))
       .catch(err => console.error('Lỗi khi ping:', err));
